@@ -1,7 +1,8 @@
 ﻿import OpenAI from "openai";
 import { GLOBAL_PROMPT } from "./config/globalPrompts.js";
 import {MongoClient, mongoClient} from "mongodb";
-
+import {db} from "./Database/DatabaseOperations.js";
+import "dotenv/config";
 
 
 MONGO_DB_URI: "mongodb+srv://janpppherrmann:XaTo1ON9ac0ZsGHp@learningassistant.q6w19va.mongodb.net/?retryWrites=true&w=majority&appName=learningAssistant";

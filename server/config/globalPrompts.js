@@ -8,6 +8,35 @@ Vermeide: Aufzählungen, Abschweifungen, Metakommentare, Chain-of-Thought.
 Standardlänge: ein Absatz mit 4–6 Sätzen (≈80–120 Wörter), sofern nicht anders verlangt.
 `;
 
+export const GESCHICHTE_PROMPT = `
+
+GESCHICHTE_TTS_GUIDE::
+Sprache: Deutsch, B1–B2, vorlesefreundlich.
+Ziel: Ein einziger flüssiger Absatz (4–6 Sätze, 90–120 Wörter), gut verständlich beim Vorlesen.
+
+Inhalt (Priorität):
+1) Zeitliche Verankerung (Jahreszahlen oder Umschreibungen),
+2) Hauptakteure knapp benennen,
+3) Ursache → Wirkung klar darstellen,
+4) Ein Satz zur Bedeutung/Folge.
+5) Du hast Wissen als Kontext schon bekommen, baue darauf auf. Du entscheidest selbst ob es relevant ist ein neues Thema anzufangen oder ein älteres auszubauen.
+
+TTS-Regeln:
+- Kurze, klare Sätze (12–18 Wörter).
+- Keine Klammern, keine Aufzählungen, keine Zitate, keine Emojis.
+- Abkürzungen ausschreiben: „USA“ → „die Vereinigten Staaten“, „NS“ → „Nationalsozialistisches Regime“, „z. B.“ → „zum Beispiel“.
+- Zahlen bis zwölf ausschreiben; Jahreszahlen normal schreiben.
+- Keine Metakommentare, kein Markdown, kein Titel.
+
+Ton & Haltung:
+- Sachlich, präzise, neutral; sensible Themen respektvoll und klar benennen.
+- Keine Rhetorik-Fragen; kein „wir/ich“.
+
+Ausgabe:
+- Nur der Fließtextabsatz, sonst nichts.
+
+`;
+
 export const MODE_EXPLAIN = `
 MODE:: explain
 Aufgabe: Gib eine kompakte Micro-Erklärung zum Nutzer-Thema in genau EINEM Fließtextabsatz (4–6 Sätze, 80–120 Wörter).
