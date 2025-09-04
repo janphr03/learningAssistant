@@ -13,6 +13,7 @@ var app = express();
 
 // Chat API Key:    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
 
+// MONGO_DB_URI: "mongodb+srv://janpppherrmann:<db_password>@learningassistant.q6w19va.mongodb.net/?retryWrites=true&w=majority&appName=learningAssistant";
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
