@@ -9,7 +9,6 @@ Standardlänge: ein Absatz mit 4–6 Sätzen (≈80–120 Wörter), sofern nicht
 `;
 
 export const GESCHICHTE_PROMPT = `
-
 GESCHICHTE_TTS_GUIDE::
 Sprache: Deutsch, B1–B2, vorlesefreundlich.
 Ziel: Ein einziger flüssiger Absatz (4–6 Sätze, 90–120 Wörter), gut verständlich beim Vorlesen.
@@ -41,6 +40,7 @@ export const MODE_EXPLAIN = `
 MODE:: explain
 Aufgabe: Gib eine kompakte Micro-Erklärung zum Nutzer-Thema in genau EINEM Fließtextabsatz (4–6 Sätze, 80–120 Wörter).
 Keine Fragen, keine Listen, keine Einleitungs- oder Abschlussfloskeln.
+Du bekommst Wissen als Kontext, baue darauf auf.
 Ausgabe: Nur der Absatz.
 `;
 

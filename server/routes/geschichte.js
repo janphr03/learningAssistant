@@ -1,22 +1,89 @@
 ﻿import OpenAI from "openai";
 import { GLOBAL_PROMPT, GESCHICHTE_PROMPT } from "./../config/globalPrompts.js";
+import { Router } from "express";
+import dbManager from "../Database/databaseOperations.js";
+import "dotenv/config";
+
+const clientOpenAi = new OpenAI({ apiKey: process.env.OPENAI_API_KEY});
+const router = Router();
 
 
+// Kontext aus allen bisherigen Antworten einer Collection zusammenstellen
+async function getContext(collectionName) {
+    try {
+        const documents = await dbManager.getAllDocuments(collectionName);
 
-const MONGO_DB_URI= "mongodb+srv://janpppherrmann:XaTo1ON9ac0ZsGHp@learningassistant.q6w19va.mongodb.net/?retryWrites=true&w=majority&appName=learningAssistant";
+        if (!documents || documents.length === 0) {
+            console.log(`Keine Dokumente in Collection '${collectionName}' gefunden.`);
+            return "Noch keine vorherigen Erklärungen vorhanden.";
+        }
 
-const clientOpenAi = new OpenAI({ apiKey: "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"});
-// const clientMongoDb = new MongoClient(MONGO_DB_URI);
+        // Alle Antworten aneinanderreihen mit Trennzeichen
+        const combinedContext = documents
+            .map(doc => doc.answer)
+            .join("\n\n--- VORHERIGE ERKLÄRUNG ---\n\n");
 
-async function runTest() {
+        console.log(`Kontext aus ${documents.length} Dokumenten erstellt`);
+        return combinedContext;
+    } catch (error) {
+        console.error("Fehler beim Abrufen des Kontexts:", error);
+        return "Fehler beim Laden des Kontexts.";
+    }
+}
+
+// allgemeine Funktion für Erklärungen
+async function explain(inputPrompt) {
+
+    const context = await getContext("Geschichte");
+
+    console.log("context:", context);
+    console.log();
+
     const response = await clientOpenAi.chat.completions.create({
-        model: "gpt-5-mini",
+        model: "gpt-5-nano",
         messages: [
             {role: "system", content: GLOBAL_PROMPT},
             { role: "system", content: "MODE:: explain" },
-            {role: "user", content: GESCHICHTE_PROMPT }],
+            {role: "system", content: context},
+            {role: "system", content: "Wichtig: Wähle ein neues Thema, das nicht im Kontext vorkommt." },
+            {role: "user", content: inputPrompt }],
+
     });
-    console.log(response.choices[0].message.content);
+
+
+    const answer = response.choices[0].message.content;
+    console.log("neue Antwort: \n" + answer + "\n");
+    console.log("\n");
+
+    return answer;
 }
 
-runTest();
+
+
+// explain Methode für den Pfad Geschichte
+router.post("/explain", async (req, res) => {
+    try {
+        var inputPrompt = GESCHICHTE_PROMPT;
+        var answer = await explain(inputPrompt);
+
+        // Antwort senden
+        res.json({ question: inputPrompt, answer: answer });
+
+        // Danach DB-Operationen durchführen
+        try {
+            await dbManager.insertDocument("Geschichte", { question: inputPrompt, answer: answer });
+            const allDocs = await dbManager.getAllDocuments("Geschichte");
+            console.log("Anzahl Dokumente in Geschichte:", allDocs.length);
+        } catch (dbError) {
+            console.error("DB-Fehler:", dbError);
+        }
+
+    } catch (e) {
+        console.error("Fehler bei explain:", e);
+        res.status(500).json({ error: "explain_failed", message: e.message });
+    }
+});
+
+
+
+export default router;

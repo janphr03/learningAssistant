@@ -1,7 +1,7 @@
 ﻿import OpenAI from "openai";
 import { GLOBAL_PROMPT } from "./config/globalPrompts.js";
 import {MongoClient, mongoClient} from "mongodb";
-import {db} from "./Database/DatabaseOperations.js";
+import {db} from "./Database/databaseOperations.js";
 import "dotenv/config";
 
 
