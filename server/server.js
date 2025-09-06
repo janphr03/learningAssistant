@@ -4,7 +4,6 @@ import express from "express";
 import cors from "cors";
 import geschichteRouter from "./routes/geschichte.js";
 import dbManager from "./Database/databaseOperations.js";
-
 // Falls du schon eigene Routen hast (z.B. qaRoutes), hier einhängen:
 // import qaRoutes from "./routes/qaRoutes.js";
 
@@ -30,6 +29,8 @@ app.get("/health", async (_req, res) => {
 
 // Eigene Router hier mounten:
 app.use("/api/geschichte", geschichteRouter);
+
+
 
 // Beispiel: einfache Testroute (kannst du löschen, wenn du eigene Routen mountest)
 app.get("/", (_req, res) => {

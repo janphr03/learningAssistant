@@ -18,9 +18,10 @@ async function getContext(collectionName) {
             return "Noch keine vorherigen Erklärungen vorhanden.";
         }
 
+
         // Alle Antworten aneinanderreihen mit Trennzeichen
         const combinedContext = documents
-            .map(doc => doc.answer)
+            .map(doc => doc.topic)
             .join("\n\n--- VORHERIGE ERKLÄRUNG ---\n\n");
 
         console.log(`Kontext aus ${documents.length} Dokumenten erstellt`);
@@ -39,39 +40,65 @@ async function explain(inputPrompt) {
     console.log("context:", context);
     console.log();
 
+    // In der explain-Funktion den system-Prompt anpassen
     const response = await clientOpenAi.chat.completions.create({
         model: "gpt-5-nano",
         messages: [
             {role: "system", content: GLOBAL_PROMPT},
-            { role: "system", content: "MODE:: explain" },
-            {role: "system", content: context},
-            {role: "system", content: "Wichtig: Wähle ein neues Thema, das nicht im Kontext vorkommt." },
-            {role: "user", content: inputPrompt }],
-
+            {role: "system", content: "MODE:: explain"},
+            {role: "system", content: "KONTEXT: Hier folgt eine Liste bisheriger Themen (nur Überschriften): " + context},
+            {role: "system", content: "Wichtig: Wähle ein neues Thema, das nicht im Kontext vorkommt. Formatiere deine Antwort folgendermaßen: [TOPIC]: Titel des Themas\n\n[CONTENT]: Deine eigentliche Erklärung"},
+            {role: "user", content: inputPrompt}
+        ],
     });
 
 
-    const answer = response.choices[0].message.content;
-    console.log("neue Antwort: \n" + answer + "\n");
+    const fullAnswer = response.choices[0].message.content;
+    console.log("neue Antwort: \n" + fullAnswer + "\n");
     console.log("\n");
 
-    return answer;
-}
+    const topicMatch = fullAnswer.match(/\[TOPIC\]:\s*(.*?)(?=\n\n\[CONTENT\]:|\n\[CONTENT\]:)/s);
 
+    const topic = topicMatch ? topicMatch[1].trim() : "Unbenanntes Thema";
+
+    console.log("Topic:", topic);
+
+    return { topic, fullAnswer };
+}
 
 
 // explain Methode für den Pfad Geschichte
 router.post("/explain", async (req, res) => {
-    try {
-        var inputPrompt = GESCHICHTE_PROMPT;
-        var answer = await explain(inputPrompt);
+    const startTime = Date.now();
 
-        // Antwort senden
-        res.json({ question: inputPrompt, answer: answer });
+    try {
+
+        console.log("1. Start Anfrage:", Date.now() - startTime, "ms");
+
+        var inputPrompt = GESCHICHTE_PROMPT;
+        console.log("2. Prompt vorbereitet:", Date.now() - startTime, "ms");
+
+        var answerObj = await explain(inputPrompt);
+        console.log("3. OpenAI-Antwort erhalten:", Date.now() - startTime, "ms");
+
+
+        // Antwort senden - komplettes Objekt zurückgeben
+        res.json({
+            question: inputPrompt,
+            topic: answerObj.topic,
+            fullAnswer: answerObj.fullAnswer
+        });
+        console.log("4. Antwort gesendet:", Date.now() - startTime, "ms");
+
 
         // Danach DB-Operationen durchführen
         try {
-            await dbManager.insertDocument("Geschichte", { question: inputPrompt, answer: answer });
+            await dbManager.insertDocument("Geschichte", {
+                question: inputPrompt,
+                topic: answerObj.topic,
+                fullAnswer: answerObj.fullAnswer,
+            });
+
             const allDocs = await dbManager.getAllDocuments("Geschichte");
             console.log("Anzahl Dokumente in Geschichte:", allDocs.length);
         } catch (dbError) {

@@ -5,6 +5,8 @@ const MONGO_DB_URI = process.env.MONGODB_URI;
 const DB_NAME = process.env.DB_NAME || "Themengebiete";
 
 class DatabaseManager {
+
+    // legt Startbedingungen fest
     constructor() {
         this.client = null;
         this.db = null;
@@ -17,7 +19,7 @@ class DatabaseManager {
             await this.client.connect();
             this.db = this.client.db(DB_NAME);
             this.connected = true;
-            console.log("✅ MongoDB connected (native driver)");
+            console.log("MongoDB connected");
         }
         return this.db;
     }
@@ -25,6 +27,7 @@ class DatabaseManager {
     async getDb() {
         return await this.connect();
     }
+
 
     async close() {
         if (this.client && this.connected) {
